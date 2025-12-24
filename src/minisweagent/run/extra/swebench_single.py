@@ -26,8 +26,8 @@ DEFAULT_OUTPUT = global_config_dir / "last_swebench_single_run.traj.json"
 # fmt: off
 @app.command()
 def main(
-    subset: str = typer.Option("lite", "--subset", help="SWEBench subset to use or path to a dataset", rich_help_panel="Data selection"),
-    split: str = typer.Option("dev", "--split", help="Dataset split", rich_help_panel="Data selection"),
+    subset: str = typer.Option("verified", "--subset", help="SWEBench subset to use or path to a dataset", rich_help_panel="Data selection"),
+    split: str = typer.Option("test", "--split", help="Dataset split", rich_help_panel="Data selection"),
     instance_spec: str = typer.Option(0, "-i", "--instance", help="SWE-Bench instance ID or index", rich_help_panel="Data selection"),
     model_name: str | None = typer.Option(None, "-m", "--model", help="Model to use", rich_help_panel="Basic"),
     model_class: str | None = typer.Option(None, "-c", "--model-class", help="Model class to use (e.g., 'anthropic' or 'minisweagent.models.anthropic.AnthropicModel')", rich_help_panel="Advanced"),

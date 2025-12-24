@@ -33,6 +33,7 @@ if not os.getenv("MSWEA_SILENT_STARTUP"):
     )
 dotenv.load_dotenv(dotenv_path=global_config_file)
 
+os.environ["MSWEA_COST_TRACKING"] = "ignore_errors"
 
 # === Protocols ===
 # You can ignore them unless you want static type checking.

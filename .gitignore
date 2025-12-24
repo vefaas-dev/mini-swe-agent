@@ -1,6 +1,6 @@
 patch.txt
 exit_statuses*.yaml
-preds.json
+src/eval/preds.json
 *.traj.json
 .env
 traj.json
@@ -183,3 +183,5 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
+
+preds.json

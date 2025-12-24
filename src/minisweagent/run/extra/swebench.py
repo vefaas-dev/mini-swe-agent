@@ -85,6 +85,8 @@ def get_sb_environment(config: dict, instance: dict) -> Environment:
         env_config["image"] = image_name
     elif env_config["environment_class"] == "singularity":
         env_config["image"] = "docker://" + image_name
+    elif env_config["environment_class"] == "swerex_vefaas":
+        env_config["image"] = image_name
     env = get_environment(env_config)
     if startup_command := config.get("run", {}).get("env_startup_command"):
         startup_command = Template(startup_command, undefined=StrictUndefined).render(**instance)
@@ -194,8 +196,8 @@ def filter_instances(
 # fmt: off
 @app.command(help=_HELP_TEXT)
 def main(
-    subset: str = typer.Option("lite", "--subset", help="SWEBench subset to use or path to a dataset", rich_help_panel="Data selection"),
-    split: str = typer.Option("dev", "--split", help="Dataset split", rich_help_panel="Data selection"),
+    subset: str = typer.Option("verified", "--subset", help="SWEBench subset to use or path to a dataset", rich_help_panel="Data selection"),
+    split: str = typer.Option("test", "--split", help="Dataset split", rich_help_panel="Data selection"),
     slice_spec: str = typer.Option("", "--slice", help="Slice specification (e.g., '0:5' for first 5 instances)", rich_help_panel="Data selection"),
     filter_spec: str = typer.Option("", "--filter", help="Filter instance IDs by regex", rich_help_panel="Data selection"),
     shuffle: bool = typer.Option(False, "--shuffle", help="Shuffle instances", rich_help_panel="Data selection"),

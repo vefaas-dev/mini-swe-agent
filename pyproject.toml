@@ -31,6 +31,9 @@ classifiers = [
 ]
 
 dependencies = [
+    "volcengine-python-sdk",
+    "swebench",
+    "swe-rex",
     "pyyaml",
     "requests",
     "jinja2",
@@ -86,6 +89,7 @@ mini = "minisweagent.run.mini:app"
 mini-swe-agent = "minisweagent.run.mini:app"
 mini-extra = "minisweagent.run.mini_extra:main"
 mini-e= "minisweagent.run.mini_extra:main"
+sb-cli = "eval.main:app"
 
 [tool.setuptools]
 include-package-data = true
@@ -95,7 +99,7 @@ version = {attr = "minisweagent.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["minisweagent*"]
+include = ["minisweagent*", "eval*"]
 
 [tool.setuptools.package-data]
 minisweagent = ["config/**/*"]

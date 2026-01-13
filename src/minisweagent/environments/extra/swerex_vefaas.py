@@ -24,7 +24,7 @@ class SwerexVefaasEnvironmentConfig(BaseModel):
     """Extra kwargs to pass to VefaasDeployment."""
     model_config = ConfigDict(extra="allow")
 
-    execute_timeout: float = 60.0
+    execute_timeout: float = 900.0
     """Timeout for command execution."""
 
 
@@ -68,8 +68,15 @@ class SwerexVefaasEnvironment:
         return self.config.model_dump()
 
     def cleanup(self):
-        asyncio.run(self.deployment.stop())
+        try:
+            asyncio.run(self.deployment.stop())
+        except Exception:
+            if hasattr(self.deployment, "_stop_sandbox_sync"):
+                self.deployment._stop_sandbox_sync()
 
     def __del__(self):
-        self.cleanup()
+        try:
+            self.cleanup()
+        except Exception as e:
+            logger.error(f"Failed to cleanup SwerexVefaasEnvironment: {e}")
 

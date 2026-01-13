@@ -51,7 +51,7 @@ class VefaasDeploymentConfig(BaseModel):
 
     image: str | None = None
     """Docker image to use for the sandbox. If not provided, uses random from image_list_file."""
-    command: str = "curl -fsSL https://vefaas-swe.tos-cn-beijing.ivolces.com/swe-rex/install_1.4.0.sh | bash -s -- {token}"
+    command: str = "curl -fsSL -o /tmp/install.sh https://vefaas-swe.tos-cn-beijing.ivolces.com/swe-rex/install_1.4.0-mini.sh && exec /bin/bash /tmp/install.sh {token}"
     """Command to run in the sandbox with authentication token."""
     timeout: float = 60.0
     """  timeout for sandbox live """

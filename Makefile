@@ -1,3 +1,4 @@
+.PHONY: swebench_single swebench eval
 
 swebench_single:
 	@echo "Running SWE-Bench on single instance"

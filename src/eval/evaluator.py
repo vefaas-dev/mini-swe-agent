@@ -1,19 +1,12 @@
 import json
+import logging
 import os
-
-from swerex.deployment.abstract import AbstractDeployment
-from pathlib import Path, PurePosixPath
 import traceback
-from swerex.runtime.abstract import (
-    AbstractRuntime,
-    Command,
-    UploadRequest,
-)
-from swebench.harness.docker_build import (
-    close_logger,
-    setup_logger,
-)
-from swebench.harness.grading import get_eval_report
+from pathlib import Path, PurePosixPath
+
+import swerex.exceptions
+from swerex.deployment.abstract import AbstractDeployment
+from swerex.runtime.abstract import AbstractRuntime, Command, UploadRequest
 from swebench.harness.constants import (
     APPLY_PATCH_FAIL,
     APPLY_PATCH_PASS,
@@ -21,25 +14,23 @@ from swebench.harness.constants import (
     DOCKER_WORKDIR,
     KEY_MODEL,
     KEY_PREDICTION,
-    LOG_REPORT,
     LOG_INSTANCE,
+    LOG_REPORT,
     LOG_TEST_OUTPUT,
 )
-
-LATEST = "latest"
+from swebench.harness.grading import get_eval_report
+from swebench.harness.test_spec.test_spec import TestSpec
+from swebench.harness.utils import EvaluationError
+from swebench.harness.docker_build import (
+    close_logger,
+    setup_logger,
+)
 
 GIT_APPLY_CMDS = [
     ["git", "apply", "--verbose"],
     ["git", "apply", "--verbose", "--reject"],
     ["patch", "--batch", "--fuzz=5", "-p1", "-i"],
 ]
-
-from swebench.harness.utils import (
-    EvaluationError,
-)
-from swebench.harness.test_spec.test_spec import TestSpec
-import swerex.exceptions
-
 
 async def copy_to_container(container: AbstractRuntime, src: Path, dst: Path):
     """
@@ -55,7 +46,6 @@ async def copy_to_container(container: AbstractRuntime, src: Path, dst: Path):
 
     # Upload file to container
     await container.upload(UploadRequest(source_path=str(src), target_path=str(dst)))
-
 
 
 
@@ -159,6 +149,7 @@ async def run_eval(
             f"Eval script for {instance_id} written to {eval_file}; copying to container..."
         )
         await copy_to_container(container.runtime, eval_file, PurePosixPath("/eval.sh"))
+        logger.info(f"Eval script for {instance_id} copied to container; now running...")
 
         # Run eval script, write output to logs
         test_output_path = log_dir / LOG_TEST_OUTPUT
@@ -218,20 +209,20 @@ async def run_eval(
     finally:
         try:
             await container.runtime.close()
-        except Exception:
-            logger.error("Error in closing container runtime")
-        try:
-            close_logger(logger)
-        except Exception:
-            logger.error("Error in closing logger")
+        except Exception as e:
+            logger.error(f"Error in closing container runtime for {instance_id}: {e}")
+
         try:
             await container.stop()
-        except Exception:
-            logger.error("Error in stopping container")
+        except Exception as e:
+            logger.error(f"Error in stopping container for {instance_id}: {e}")
+
+        try:
+            close_logger(logger)
+        except Exception as e:
+            print(f"Error in closing logger for {instance_id}: {e}")
+
         return {
             "completed": eval_completed,
             "resolved": report.get(instance_id, {}).get("resolved", False),
         }
-
-
-

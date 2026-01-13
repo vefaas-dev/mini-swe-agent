@@ -43,6 +43,8 @@ def create_sandbox(
         resp = client.create_sandbox(
             volcenginesdkvefaas.CreateSandboxRequest(
                 function_id=config.function_id,
+                cpu_milli=2000,
+                memory_mb=4096,
                 instance_image_info=instance_image_info,
                 timeout=int(config.timeout),
                 envs=[
@@ -121,7 +123,7 @@ class VefaasDeployment(AbstractDeployment):
     async def _wait_until_alive(self, timeout: float = 10.0):
         try:
             return await wait_until_alive(
-                self.is_alive, timeout=timeout, function_timeout=0.5
+                self.is_alive, timeout=timeout, function_timeout=10
             )
         except TimeoutError as e:
             self.logger.error("Runtime did not start within timeout.")
@@ -160,13 +162,9 @@ class VefaasDeployment(AbstractDeployment):
         if not self._sandbox_id:
             raise RuntimeError("Failed to create sandbox")
 
-        self.logger.info(f"Sandbox {self._sandbox_id} created")
         self._hooks.on_custom_step("Starting runtime")
 
         function_route = self._config.apig_endpoint
-        if not function_route:
-            raise ValueError("VEFAAS_APIG_ENDPOINT/VEFAAS_FUNCTION_ROUTE environment variable or apig_endpoint in config not set")
-
         runtime_config = RemoteRuntimeConfig(
             base_url=function_route,
             extra_params={"faasInstanceName": self._sandbox_id},
@@ -175,7 +173,7 @@ class VefaasDeployment(AbstractDeployment):
         )
         self._runtime = RemoteRuntime.from_config(runtime_config)
 
-        await self._wait_until_alive(timeout=self._config.startup_timeout)
+        await self._wait_until_alive(timeout=120)
         self.logger.info("Runtime started")
 
     async def stop(self):

@@ -192,12 +192,15 @@ class RemoteRuntime(AbstractRuntime):
     async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
-    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 0):
+    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 3):
         """Small helper to make requests to the server and handle errors and output."""
         request_url = f"{self._api_url}/{endpoint}"
         request_id = str(uuid.uuid4())
         headers = self._headers.copy()
         headers["X-Request-ID"] = request_id  # idempotency key for the request
+
+        # Get timeout from payload if available
+        timeout = getattr(payload, "timeout", None) if payload else None
 
         retry_count = 0
         last_exception: Exception | None = None
@@ -206,7 +209,10 @@ class RemoteRuntime(AbstractRuntime):
 
         while retry_count <= num_retries:
             try:
-                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(force_close=True),
+                    timeout=aiohttp.ClientTimeout(total=self._get_timeout(timeout)),
+                    ) as session:
                     async with session.post(
                             request_url,
                             json=payload.model_dump() if payload else None,

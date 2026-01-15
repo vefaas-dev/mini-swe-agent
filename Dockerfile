@@ -1,8 +1,10 @@
-from enterprise-public-cn-beijing.cr.volces.com/vefaas-public/all-in-one-sandbox:1.0.0.158
+FROM enterprise-public-cn-beijing.cr.volces.com/vefaas-public/all-in-one-sandbox:1.0.0.158
 
-RUN git clone https://github.com/vefaas-dev/mini-swe-agent.git /home/gem/mini-swe-agent
+RUN  git clone https://github.com/vefaas-dev/mini-swe-agent.git /home/gem/mini-swe-agent
 
 RUN cp /home/gem/mini-swe-agent/src/minisweagent/config/extra/swebench_vefaas.yaml /home/gem/swebench_vefaas.yaml
+
+RUN cp /home/gem/mini-swe-agent/build/.env /home/gem/.env.example
 
 WORKDIR /home/gem/mini-swe-agent
 
